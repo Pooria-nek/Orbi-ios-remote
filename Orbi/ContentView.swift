@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var bluetoothManager = BluetoothManager()
+    @State private var textToSend = "Hello ESP32!"
     
     var body: some View {
         VStack {
@@ -16,17 +17,24 @@ struct ContentView: View {
                 .padding()
                 .foregroundColor(bluetoothManager.isConnected ? .green : .red)
             
-            Text("Received Data: \(bluetoothManager.receivedData)")
+            TextField("Text to send", text: $textToSend)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding()
-                .foregroundColor(.blue)
+            
+            Button("Send to ESP32") {
+                bluetoothManager.sendDataToESP32(data: textToSend)
+            }
+            .padding()
+            .background(bluetoothManager.isConnected ? Color.green : Color.gray)
+            .foregroundColor(.white)
+            .cornerRadius(8)
+            .disabled(!bluetoothManager.isConnected)
+            
+            Text("Received from ESP32: \(bluetoothManager.receivedData)")
+                .padding()
         }
         .onAppear {
-            // This can be used to initiate Bluetooth scanning on screen load if needed
-        }
-        .onChange(of: bluetoothManager.isConnected) { newValue in
-            if newValue {
-                print("Successfully connected to ESP32!")
-            }
+            bluetoothManager.centralManager.delegate = bluetoothManager
         }
     }
 }
